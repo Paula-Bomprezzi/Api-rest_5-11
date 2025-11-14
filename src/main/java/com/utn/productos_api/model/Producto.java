@@ -2,6 +2,15 @@ package com.utn.productos_api.model;
 
 import jakarta.persistence.*;
 
+import lombok.*;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+@ToString
+@Builder
+
 @Entity
 @Table(name = "producto")
 public class Producto {
