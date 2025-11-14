@@ -2,6 +2,7 @@ package com.utn.productos_api.service;
 
 import com.utn.productos_api.dto.ProductoDTO;
 import com.utn.productos_api.dto.ProductoResponseDTO;
+import com.utn.productos_api.exception.StockInsuficienteException;
 import com.utn.productos_api.model.Categoria;
 import com.utn.productos_api.model.Producto;
 import com.utn.productos_api.respository.ProductoRepository;
@@ -70,6 +71,13 @@ public List<Producto> obtenerPorCategoria(Categoria categoria){
     }
 
 public Producto actualizarStock(Long id, Integer nuevoStock){
+        // Validar que el stock no sea negativo
+        if (nuevoStock < 0) {
+            throw new StockInsuficienteException(
+                    "No se puede establecer un stock negativo. Stock solicitado: " + nuevoStock
+            );
+        }
+        
         return obtenerPorId(id)
                 .map(objetoEncontrado -> {
                     Integer stockViejo = objetoEncontrado.getStock();
