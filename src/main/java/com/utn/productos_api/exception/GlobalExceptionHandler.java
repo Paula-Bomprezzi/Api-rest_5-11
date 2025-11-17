@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@Order(1) // Menor prioridad para no interferir con OpenAPI
 public class GlobalExceptionHandler {
 
     // Maneja ProductoNotFoundException → Retorna 404
@@ -75,10 +77,17 @@ public class GlobalExceptionHandler {
     }
 
     // Maneja Exception genérica → Retorna 500 para errores generales
-    @ExceptionHandler(Exception.class)
+    // Excluir RuntimeException que OpenAPI puede lanzar
+    @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
+        
+        // Excluir RuntimeException que OpenAPI puede lanzar durante la generación de docs
+        if (ex instanceof RuntimeException && 
+            (ex.getMessage() != null && ex.getMessage().contains("OpenAPI"))) {
+            throw (RuntimeException) ex;
+        }
         
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
